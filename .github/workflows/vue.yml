@@ -1,0 +1,48 @@
+name: Vue Project CI/CD
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    vue-test:
+        runs-on: ubuntu-latest
+
+        services:
+            server:
+                image: node:current-alpine
+                ports:
+                    - 8080:5173
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4.1.7
+
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4.0.4
+              with:
+                node-version: '20'
+
+            - name: Cache
+              uses: actions/cache@v4.0.2
+              with:
+                path: node_modules
+                key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+                restore-keys: |
+                  ${{ runner.os }}-node-
+
+            - name: Install dependencies
+              run: npm install
+
+            - name: Run TypeScript Compiler
+              run: npm run build --if-present # Asegurarnos que hay un script para compilar typescript
+
+            - name: Run test
+              run: npm run test:unit
+
+            - name: Build project
+              run: npm run build
+
+            - name: Deploy GitHub Pages site
+              uses: actions/deploy-pages@v4.0.5
