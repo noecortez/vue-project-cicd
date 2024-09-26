@@ -10,39 +10,23 @@ jobs:
         runs-on: ubuntu-latest
         
         steps:
-            - name: Checkout
-              uses: actions/checkout@v3
-            
-            - name: Setup Node.js
-              uses: actions/setup-node@v3
-              with:
-                node-version: '16'
-            
-            - name: Install Dependencies
-              run: npm install
-            
-            - name: Build Project
-              run: npm run build
-            
-            - name: Upload Build Artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                name: github-pages
-                path: ./dist
-
-    deploy:
-        needs: build
+          - name: Checkout code
+            uses: actions/checkout@v3
+    
+          - name: Set up Node.js
+            uses: actions/setup-node@v3
+            with:
+              node-version: '18'
+      
+          - name: Install dependencies
+            run: npm install
+      
+          - name: Build project
+            run: npm run build
         
-        permissions:
-            pages: write
-            id-token: write
-
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
-
-        runs-on: ubuntu-latest
-        steps:
-            - name: Deploy GitHub Pages site
-              id: deployment
-              uses: actions/deploy-pages@v4
+          - name: Deploy to GitHub Pages
+            if: success()
+            uses: peaceiris/actions-gh-pages@v3
+            with:
+              github_token: ${{ secrets.GITHUB_TOKEN }}
+              publish_dir: ./dist
